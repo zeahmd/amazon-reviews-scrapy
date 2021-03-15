@@ -6,6 +6,7 @@
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import logging
 
+
 class AmazonPipeline(object):
     def __init__(self):
         pass

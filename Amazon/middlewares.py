@@ -16,10 +16,9 @@ from io import BytesIO
 import pytesseract
 
 
-
 options = Options()
 options.headless = False
-driver = webdriver.Firefox(executable_path='./geckodriver')
+driver = webdriver.Firefox(executable_path="./geckodriver")
 
 
 class AmazonSpiderMiddleware(object):
@@ -67,7 +66,7 @@ class AmazonSpiderMiddleware(object):
             yield r
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info("Spider opened: %s" % spider.name)
 
 
 class AmazonDownloaderMiddleware(object):
@@ -94,23 +93,33 @@ class AmazonDownloaderMiddleware(object):
         #   installed downloader middleware will be called
 
         logging.log(logging.INFO, "Entered Download Middleware process_request")
-        if 'amazon.com' in request.url and 'reviewerType=all_reviews' in request.url:
+        if "amazon.com" in request.url and "reviewerType=all_reviews" in request.url:
             driver.get(request.url)
 
             while True:
-                if driver.find_element_by_xpath('//title').get_attribute('innerText') == 'Robot Check':
+                if (
+                    driver.find_element_by_xpath("//title").get_attribute("innerText")
+                    == "Robot Check"
+                ):
                     logging.log(logging.INFO, "Checking Captcha!")
-                    link = driver.find_element_by_xpath('//div[@class="a-section"]')\
-                        .find_element_by_xpath('.//img').get_attribute('src')
+                    link = (
+                        driver.find_element_by_xpath('//div[@class="a-section"]')
+                        .find_element_by_xpath(".//img")
+                        .get_attribute("src")
+                    )
                     solved_captcha = self.captcha_solver(link)
-                    logging.log(logging.INFO, "Solved captcha: "+solved_captcha)
+                    logging.log(logging.INFO, "Solved captcha: " + solved_captcha)
 
-                    driver.find_element_by_xpath("//input[@class='a-span12']").send_keys(solved_captcha)
+                    driver.find_element_by_xpath(
+                        "//input[@class='a-span12']"
+                    ).send_keys(solved_captcha)
                     driver.find_element_by_xpath("//button[@type='submit']").click()
 
                 else:
                     body = driver.page_source
-                    return HtmlResponse(driver.current_url, body=body, encoding='utf-8', request=request)
+                    return HtmlResponse(
+                        driver.current_url, body=body, encoding="utf-8", request=request
+                    )
 
         return None
 
@@ -118,7 +127,7 @@ class AmazonDownloaderMiddleware(object):
         captcha_response = requests.get(captcha_url)
         img = Image.open(BytesIO(captcha_response.content))
         captcha = pytesseract.image_to_string(img)
-        logging.log(logging.INFO, str("Captcha Solved: "+captcha))
+        logging.log(logging.INFO, str("Captcha Solved: " + captcha))
         return captcha
 
     def process_response(self, request, response, spider):
@@ -141,4 +150,4 @@ class AmazonDownloaderMiddleware(object):
         pass
 
     def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        spider.logger.info("Spider opened: %s" % spider.name)
